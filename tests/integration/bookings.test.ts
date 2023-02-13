@@ -185,9 +185,9 @@ describe("PUT /booking/:bookingId", () => {
             const ticket = await createTicket(enrollment.id, ticketType.id, "PAID");
             const hotel = await createHotel();
             const room = await createSingleBedRoomWithHotelId(hotel.id);
-            const fakeRoom
+            const fakeRoom = await createSingleBedRoomWithHotelId(hotel.id);
             await createBooking(fakeUser.id, room.id);
-            const booking = await createBooking(user.id, room.id);
+            const booking = await createBooking(user.id, fakeRoom.id);
 
             const response = await server
                 .put(`/booking/${booking.id}`)
@@ -195,6 +195,28 @@ describe("PUT /booking/:bookingId", () => {
                 .send({ roomId: room.id });
 
             expect(response.status).toEqual(httpStatus.FORBIDDEN);
+        });
+
+        it("should respond with status 200 and with bookingId", async () => {
+            const user = await createUser();
+            const token = await generateValidToken(user);
+            const enrollment = await createEnrollmentWithAddress(user);
+            const ticketType = await createTicketTypeWithHotel();
+            await createTicket(enrollment.id, ticketType.id, "PAID");
+            const hotel = await createHotel();
+            const room = await createRoomWithHotelId(hotel.id);
+            const booking = await createBooking(user.id, room.id)
+            const newRoom = await createRoomWithHotelId(hotel.id);
+
+            const response = await server
+                .put(`/booking/${booking.id}`)
+                .set("Authorization", `Bearer ${token}`)
+                .send({ roomId: newRoom.id });
+
+            expect(response.status).toEqual(httpStatus.OK);
+            expect(response.body).toEqual({
+                bookingId: expect.any(Number)
+            });
         });//atual
 
     });

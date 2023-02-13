@@ -45,7 +45,7 @@ export async function putBooking(req: AuthenticatedRequest, res: Response) {
   try {
     const create = await bookingService.updateBooking(userId, roomId, bookingId);
     const createdBookingId = { bookingId: create.id}
-    return res.status(httpStatus.CREATED).send(createdBookingId);
+    return res.status(httpStatus.OK).send(createdBookingId);
   } catch (error) {
     if (error.name === "roomCapacityError" || error.name === "CannotListBookingError") {
       return res.sendStatus(httpStatus.FORBIDDEN);
